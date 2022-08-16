@@ -8,7 +8,7 @@ from functools import reduce
 
 load_dotenv()
 
-SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID', 'YOUR_ID')
+SPREADSHEET_ID = os.environ.get('SPREADSHEET_ID', 'YOUR_SPREADSHEET_ID')
 WORKSHEET_INDEX = int(os.environ.get('WORKSHEET_INDEX', 0))
 LOCALES_PATH = os.environ.get('LOCALES_PATH', './locales')
 
@@ -22,7 +22,7 @@ def fetch_worksheet(spreadsheet_id: str, worksheet_index: int) -> gspread.Worksh
 
 def fetch_locales(worksheet: gspread.Worksheet) -> list:
     '''fetch locale names from worksheet, skip key column'''
-    return worksheet.row_values(1)[1:]
+    return list(filter(lambda x: not x.startswith('#'), worksheet.row_values(1)[1:]))
 
 
 def update_dict_from_keys(d, keys, val):
@@ -30,12 +30,12 @@ def update_dict_from_keys(d, keys, val):
 
     e.g. for the given key `message.hello.world` with value `Hello World`,
 
-    the result will be `{'message': {'hello': {'world': 'Hello World'}}}`
+    the result will be `{'message': {'hello': {'world': {'value': 'Hello World'}}}}`
     '''
     reduce(
         lambda d, k: d.setdefault(k, {}),
-        keys[:-1], d
-    )[keys[-1]] = val
+        keys, d
+    )['value'] = val.replace('\n', '<br/>')
 
 
 def build_i18n_dict(locale: str, worksheet: gspread.Worksheet) -> dict:
@@ -46,8 +46,11 @@ def build_i18n_dict(locale: str, worksheet: gspread.Worksheet) -> dict:
         if not row:
             break
 
-        keystr = row['key']
-        valstr = row[locale]
+        keystr: str = row['key']
+        valstr: str = row[locale]
+        if not keystr:
+            print(f'skip empty key: {row}')
+            continue
 
         keys = keystr.split('.')
         update_dict_from_keys(D, keys, valstr)

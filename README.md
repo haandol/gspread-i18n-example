@@ -4,17 +4,31 @@ this repository is for generating vue-i18n json file using gspread
 
 # Prerequisites
 
--   Python3.8+
+- Python3.8+
 
 # Setup
 
--   [Enable API Access for a project](https://docs.gspread.org/en/latest/oauth2.html#enable-api-access-for-a-project)
--   [Create service account and download creds as JSON](https://docs.gspread.org/en/latest/oauth2.html#for-bots-using-service-account)
+- [Enable API Access for a project](https://docs.gspread.org/en/latest/oauth2.html#enable-api-access-for-a-project)
+- [Create service account and download creds as JSON](https://docs.gspread.org/en/latest/oauth2.html#for-bots-using-service-account)
 
 After setup you would,
 
--   replace [creds.json](./creds.json) with your own one.
--   create a google spreadsheet document
+- replace [creds.json](./creds.json) with your own one.
+- create a google spreadsheet document
+
+## Spreadsheet Format
+
+| key         | en          | kr         | jp             | #comments            |
+| ----------- | ----------- | ---------- | -------------- | -------------------- |
+| hello.world | hello world | 안녕하세요 | こんにちは世界 | this will be ignored |
+
+- first row is locales, column name with `#` will be ignored
+- you can use `.` for generating hierarchical key.
+
+```
+e.g. for the given key `message.hello.world` with value `Hello World`,
+the result will be `{'message': {'hello': {'world': {'value': 'Hello World'}}}}`
+```
 
 # Installation
 
@@ -74,4 +88,4 @@ save locale to : ./locales/id.json
 
 ## The caller does not have permission" when using server key
 
--   [invite service account to the docuemnt](https://stackoverflow.com/questions/38949318/google-sheets-api-returns-the-caller-does-not-have-permission-when-using-serve)
+- [invite service account to the docuemnt](https://stackoverflow.com/questions/38949318/google-sheets-api-returns-the-caller-does-not-have-permission-when-using-serve)
